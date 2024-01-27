@@ -1,5 +1,7 @@
 package com.fatianov.SmartShop.Security;
 
+import com.fatianov.SmartShop.Entities.Role;
+import com.fatianov.SmartShop.Entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -18,7 +20,7 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private static final String KEY = "f1f33c89318041d7ddbe90638fd68a2632421261e19acd3163401c97554ed305";
+    private static final String KEY = "654dcead885b5a12e9775420d79c2e7273c577d63add0c555d3686fa3ac7fda8";
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -51,6 +53,14 @@ public class JwtService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
+    public boolean isAdmin(String token, UserDetails userDetails){
+        final String username = extractUsername(token);
+        return username.equals(userDetails.getUsername()) &&
+                userDetails.getAuthorities().stream()
+                        .anyMatch(auth -> auth.getAuthority().equals(Role.ADMIN.name())) &&
+                !isTokenExpired(token);
+    }
+
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
@@ -58,7 +68,6 @@ public class JwtService {
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
-
 
     private Claims extractAllClaims(String token){
 
